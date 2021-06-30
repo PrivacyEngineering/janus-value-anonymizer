@@ -11,7 +11,7 @@ exports.addNoise = (value, {typeOfDistribution, distributionParameters, valuePar
 
     if(value && value instanceof Number || typeof value == "number"){
         //valueParameters musst say, whether this is an int or not
-        return value + PD.rbinom(1,10,0.5)[0]
+        return value -100 //+ PD.rbinom(1,10,0.5)[0]
     }
 
     if(value && value instanceof Date){
