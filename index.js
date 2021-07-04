@@ -64,13 +64,15 @@ exports.addNoise = (value, {typeOfDistribution, distributionParameters, valuePar
     var a = new Array();
     a.push(1); //must be added, but since we only use one sample, 1 fits.
 
-    if(!typeOfDistribution) return null;
+    if(!typeOfDistribution || !distributionParameters) throw new AnonymizationError("No distribution or corresponding parameters specified.");
     
     const distribution = distributions[typeOfDistribution];
 
     for(p of distribution["parameters"]){
         a.push(distributionParameters[p])
     }
+
+    if (a.length-1 != distribution["parameters"].length) throw new AnonymizationError("Not all parameters could be mapped.")
 
     //evaluate numbers
     if(value && value instanceof Number || typeof value == "number"){
@@ -112,13 +114,46 @@ exports.addNoise = (value, {typeOfDistribution, distributionParameters, valuePar
         }
     }
     
-    return null;
+    throw new AnonymizationError("Called anonymization with not supported data type.");
 }
 
-exports.generalize = () => {
-    return 3;
+exports.generalize = (value, {generalizationParameters}) => {
+    if(value && value instanceof String || typeof value == "string"){        
+        if(!generalizationParameters || !generalizationParameters["hideCharactersFromPosition"]) throw new AnonymizationError("No fitting generalization parameteres given.")
+        
+        var val = [];
+        const hideCharactersFromPosition = generalizationParameters["hideCharactersFromPosition"];
+
+        for(let i = 0; i < value.length; i++){
+            if(i < hideCharactersFromPosition) {
+                val.push(value[i]);
+            } else {
+                val.push("*");
+            }
+        }
+        return val.join("");
+        
+    }
+
+    if(value && value instanceof Number || typeof value == "number"){
+        if(!generalizationParameters || !generalizationParameters["stepSize"]) throw new AnonymizationError("No fitting generalization parameteres given.")
+        
+        const stepSize = generalizationParameters["stepSize"];
+
+        return ~~(value / stepSize) * stepSize
+    }
+
+    throw new AnonymizationError("Called anonymization with not supported data type.");
 }
 
 exports.suppress = () => {
     return null;
 }
+class AnonymizationError extends Error{
+    constructor(message) {
+        super(message);
+        this.name = "AnonymizationError"
+    }
+}
+
+exports.AnonymizationError = AnonymizationError;
