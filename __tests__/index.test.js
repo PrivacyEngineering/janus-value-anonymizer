@@ -1,8 +1,8 @@
 const { addNoise, generalize, AnonymizationError } = require("../index");
 
-describe("Test Distribution Call", () => {
+describe("Noise", () => {
     //test stuff
-    test("Normal Distribution", () => {
+    test("Return type Integer", () => {
         const val = addNoise(10, {
             typeOfDistribution:"normal", 
             distributionParameters: {
@@ -14,12 +14,9 @@ describe("Test Distribution Call", () => {
             }
         });
         expect(Number.isInteger(val)).toEqual(true);
-    }) 
-})
+    });
 
-describe("Test Types", () => {
-    //test stuff
-    test("Date", () => {
+    test("Date hour noise does not influence higher unit.", () => {
         const val = addNoise(new Date(2020,0,1,10), {
             typeOfDistribution:"uniform", 
             distributionParameters: {
@@ -31,7 +28,22 @@ describe("Test Types", () => {
             }
         });
         expect(val.getDate()).toEqual(1);
-    }) 
+    });
+
+    test("Date hour gives expected value.", () => {
+        const d = new Date(2020,0,1,10);
+        const val = addNoise(d, {
+            typeOfDistribution:"uniform", 
+            distributionParameters: {
+                min: 5,
+                max: 5
+            }, 
+            valueParameters: {
+                addNoiseToUnit: "hour"
+            }
+        });
+        expect(val.getHours()).toEqual(15);
+    });
 })
 
 describe("Generalization", () => {
@@ -80,5 +92,23 @@ describe("Generalization", () => {
             throwedError = true;
         }
         expect(throwedError).toEqual(true)
+    });
+
+    test("Date hour", () => {
+        const val = generalize(new Date(2020,0,1,10), {
+            generalizationParameters: {
+                dateUnit: "day"
+            }
+        });
+        expect(val).toEqual(new Date(2020,0,1,0));
+    });
+
+    test("Date day", () => {
+        const val = generalize(new Date(2020,0,15,10), {
+            generalizationParameters: {
+                dateUnit: "month"
+            }
+        });
+        expect(val).toEqual(new Date(2020,0,1,0));
     });
 })

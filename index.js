@@ -1,4 +1,5 @@
 const PD = require("probability-distributions");
+const moment = require("moment");
 
 const distributions = {
     binomial: {
@@ -59,6 +60,10 @@ const distributions = {
     },
 }
 
+const dateUnits = ["millisecond", "second", "minute", "hour", "day", "month", "year"];
+
+const dateUnitMultiplier = [1, 1000, 60, 60, 24, 30, 12];
+
 exports.addNoise = (value, {typeOfDistribution, distributionParameters, valueParameters}) => {
     //get arguments for distribution
     var a = new Array();
@@ -83,35 +88,13 @@ exports.addNoise = (value, {typeOfDistribution, distributionParameters, valuePar
         return newVal;
     }
 
-    Date.prototype.addValueToUnit = function(unit, val){
-        const dateUnitsGetter = {
-            "millisecond": this.getMilliseconds, 
-            "second": this.getSeconds,
-            "minute": this.getMinutes, 
-            "hour": this.getHours, 
-            "day": this.getDay, 
-            "month": this.getMonth,
-            "year": this.getFullYear
-        };
-        const dateUnitsSetter = {
-            "millisecond": this.setMilliseconds, 
-            "second": this.setSeconds,
-            "minute": this.setMinutes, 
-            "hour": this.setHours, 
-            "day": this.setDate, 
-            "month": this.setMonth,
-            "year": this.setFullYear
-        };
-        dateUnitsSetter[unit].bind(this)(dateUnitsGetter[unit].bind(this)()+Math.round(val))
-        return this;
-    }
-
     //evaluate dates
     if(value && value instanceof Date){
         const noise = distribution["f"].bind(PD)(...a)[0];
-        if(valueParameters && valueParameters["addNoiseToUnit"]){
-            return value.addValueToUnit(valueParameters["addNoiseToUnit"], noise);
-        }
+        
+        if(!valueParameters && !valueParameters["addNoiseToUnit"]) throw new AnonymizationError("Unit for noise on date not given.") 
+
+        return addValueToDate(value, valueParameters["addNoiseToUnit"], noise);
     }
     
     throw new AnonymizationError("Called anonymization with not supported data type.");
@@ -143,6 +126,12 @@ exports.generalize = (value, {generalizationParameters}) => {
         return ~~(value / stepSize) * stepSize
     }
 
+    if(value && value instanceof Date){
+        if(!generalizationParameters || !generalizationParameters["dateUnit"]) throw new AnonymizationError("No fitting generalization parameteres given.");
+        
+        return moment(value).startOf(generalizationParameters["dateUnit"]).toDate();        
+    }
+
     throw new AnonymizationError("Called anonymization with not supported data type.");
 }
 
@@ -157,3 +146,13 @@ class AnonymizationError extends Error{
 }
 
 exports.AnonymizationError = AnonymizationError;
+
+function addValueToDate(date, unit, noise) {
+    unitIndex = dateUnits.indexOf(unit);
+    if (unitIndex < 0)
+        throw new AnonymizationError("Could not match date unit.");
+
+    multiplier = dateUnitMultiplier.slice(0, unitIndex + 1).reduce((a, b) => a * b, 1);
+
+    return new Date(date.getTime() + multiplier * noise);
+}
