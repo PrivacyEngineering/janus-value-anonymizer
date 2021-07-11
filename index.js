@@ -1,5 +1,6 @@
 const PD = require("probability-distributions");
 const moment = require("moment");
+const CryptoJs = require("crypto-js");
 
 const distributions = {
     binomial: {
@@ -135,9 +136,16 @@ exports.generalize = (value, {generalizationParameters}) => {
     throw new AnonymizationError("Called anonymization with not supported data type.");
 }
 
-exports.suppress = () => {
-    return null;
+exports.hash = (value, {hashingParameters, convertion}) => {
+    const hash = CryptoJs.SHA3(value, hashingParameters);
+
+    if(!convertion || convertion == "Base64"){
+        return hash.toString(CryptoJs.enc.Base64)
+    }else if (convertion == "Hex"){
+        return hash.toString(CryptoJs.enc.Hex)
+    }
 }
+
 class AnonymizationError extends Error{
     constructor(message) {
         super(message);

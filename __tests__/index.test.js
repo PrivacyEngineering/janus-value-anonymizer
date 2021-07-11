@@ -1,4 +1,4 @@
-const { addNoise, generalize, AnonymizationError } = require("../index");
+const { addNoise, generalize, AnonymizationError, hash } = require("../index");
 
 describe("Noise", () => {
     //test stuff
@@ -111,4 +111,24 @@ describe("Generalization", () => {
         });
         expect(val).toEqual(new Date(2020,0,1,0));
     });
+})
+
+describe("Hashing", () => {
+    test("Base64 Hash", () => {
+        const val = hash("Message", {
+            hashingParameters: {
+                outputLength: 256
+            }
+        });
+        expect(val).toEqual("mlnvvEcbU0kcgDj9XV/jvgoimHMwK6+6kMGfvn18fzU=")
+    });
+    test("Hex Hash", () => {
+        const val = hash("Message", {
+            hashingParameters: {
+                outputLength: 256
+            },
+            convertion: "Hex"
+        });
+        expect(val).toEqual("9a59efbc471b53491c8038fd5d5fe3be0a229873302bafba90c19fbe7d7c7f35")
+    })
 })
