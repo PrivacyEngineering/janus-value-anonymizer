@@ -74,6 +74,8 @@ exports.addNoise = (value, {typeOfDistribution, distributionParameters, valuePar
     
     const distribution = distributions[typeOfDistribution];
 
+    if(!distribution) throw new AnonymizationError("No corresponding distribution defined.")
+
     for(p of distribution["parameters"]){
         a.push(distributionParameters[p])
     }
