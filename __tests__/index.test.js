@@ -1,7 +1,6 @@
 const { addNoise, generalize, AnonymizationError, hash } = require("../index");
 
 describe("Noise", () => {
-    //test stuff
     test("Return type Integer", () => {
         const val = addNoise(10, {
             typeOfDistribution:"normal", 
@@ -47,13 +46,23 @@ describe("Noise", () => {
 })
 
 describe("Generalization", () => {
-    test("String Last Elements", () => {
+    test("String 4 characters plain", () => {
         const val = generalize("ThisIsText", {
             generalizationParameters: {
                 hideCharactersFromPosition: 4
             }
         });
         expect(val).toEqual("This******");
+    });
+
+    test("String 4 characters plain and 3 hide characters", () => {
+        const val = generalize("ThisIsText", {
+            generalizationParameters: {
+                hideCharactersFromPosition: 4,
+                numberOfHideCharacters: 3
+            }
+        });
+        expect(val).toEqual("This***");
     });
 
     test("Integer with different step sizes", () => {

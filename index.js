@@ -109,11 +109,21 @@ exports.generalize = (value, {generalizationParameters}) => {
         
         var val = [];
         const hideCharactersFromPosition = generalizationParameters["hideCharactersFromPosition"];
+        var numberOfHideCharacters;
+        if(generalizationParameters["numberOfHideCharacters"] && typeof generalizationParameters["numberOfHideCharacters"] == "number"){
+            numberOfHideCharacters = generalizationParameters["numberOfHideCharacters"];
+        } 
 
-        for(let i = 0; i < value.length; i++){
+        loop1: for(let i = 0; i < value.length; i++){
             if(i < hideCharactersFromPosition) {
                 val.push(value[i]);
             } else {
+                if(numberOfHideCharacters){
+                    for(let j = 0; j < numberOfHideCharacters; j++) {
+                        val.push("*");
+                    }
+                    break loop1;
+                }
                 val.push("*");
             }
         }
