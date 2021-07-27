@@ -1,6 +1,6 @@
 {
   "name": "value-anonymizer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Provides anonymization functions to generalize data, add noise and hash data.",
   "main": "index.js",
   "scripts": {

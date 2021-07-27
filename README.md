@@ -1,11 +1,94 @@
-# Anonymizer
+# value-anonymizer
 
-This is the anonymizer package.
+## Usage
+### Installation
+```sh
+npm install value-anonymizer
+```
 
-## Install this package in another package
-Run ```npm link``` here. 
+### Overview
+The anonymizer package consists of three anonymizing methods, that are working for the folloing data types: 
 
-Run ```npm link anonymizer``` where you want to link this package.
+- noise: ```Number, Date```
+- generalize: ```Number, String, Date```
+- hash: ```Number, String, Date```
 
-## Debugging Jest
-Follow this command: https://jestjs.io/docs/troubleshooting
+Each function needs some anonymization parameters. In general, the call of the function is 
+```js
+functionName(value, parameters)
+``` 
+Which type of parameters object is required will be explained in the following.
+### Noise 
+In general, when using noise, one has to define a certain distribution that is used to sample the noise value that is added to the original value. Therefore, every distribution of the ```probability-distributions``` package (https://www.npmjs.com/package/probability-distributions) is available. To use them, pass parameter object as follows:
+```js
+{   
+    typeOfDistribution:"normal", 
+    distributionParameters: {
+        mean: 100,
+        standardDeviation: 1
+    }, 
+    valueParameters: {
+        isInt: true
+    }
+}
+```
+There are the following distributions available: 
+- "binomial", parameters: ["number", "probability"]
+- "beta", parameters: ["alpha", "beta"]
+- "cauchy", parameters: ["scale", "location"]
+- "chiSquared", parameters: parameters: ["degrees"]
+- "exponential", parameters: ["rate"]
+- "fdistribution", parameters: ["degree1", "degree2"]
+- "gamma", parameters: ["shape", "rate"]
+- "laplace", parameters: ["mean", "standardDeviation"]
+- "logNormal", parameters: ["logMean", "logStandardDeviation"]
+- "negativeBinomial", parameters: ["failures", "probability"]
+- "normal", parameters: ["mean", "standardDeviation"]
+- "poisson":, parameters: ["mean"]
+- "uniform":, parameters: ["min", "max"]
+- "uniformInt":, parameters: ["min", "max"]
+
+For the valueParameters, on can specify for numbers wheter the output should be and Integer by ```isInt``` and for dates which unit the noise has by ```addNoiseToUnit```.  
+### Generalization
+#### Strings
+Pass a parameter object like
+```js
+{
+    generalizationParameters: {
+        hideCharactersFromPosition: 4,
+        numberOfHideCharacters: 3
+    }
+}
+```
+Returns ```"This***"``` for ```"ThisIsText"``` as input.
+#### Numbers
+Pass a parameter object like
+```js
+{
+    generalizationParameters: {
+        stepSize: 10
+    }
+}
+```
+Values are always rounded down to the next smaller step size boundary. By way of example: If the stepsize is 10, there would be limits of 0 (representing 0-9), 10 (for 10-19), 20 (for 20-29), and so on. This ensures that exactly one number (0,10,20,...) represents a range.
+Thus, returns ```20``` for ```29``` as input.
+
+#### Dates
+```js
+{
+    generalizationParameters: {
+        dateUnit: "day"
+    }
+}
+```
+The resulting date is truncated to this Unit. Returns ```Date(2021,10,0)``` for ```Date(2021,10,23,2)``` as input.
+
+### Hashing
+Uses the SHA3 hash function of crypto-js.
+```js
+{
+    hashingParameters: {
+        outputLength: 256
+    }
+}
+```
